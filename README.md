@@ -8,4 +8,6 @@ Put Console.au3 and NtProcess.au3 into Include folder in your AutoIt installatio
 Run or compile script as x64.
 
 # IsPressed function a.k.a hotkey
+You can change hotkey "G" to anything you wish.
+
 https://www.autoitscript.com/autoit3/docs/libfunctions/_IsPressed.htm
