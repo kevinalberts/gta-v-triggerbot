@@ -5,21 +5,16 @@
 #include <Misc.au3>
 #include <Console.au3>
 
-Local $hDLL = DllOpen("user32.dll")
+Global $hDLL = DllOpen("user32.dll"), $dwTriggerbotFinal, $hProcess, $dwModuleBase, $iEntityType = 1 ; GetEnitityType()
 
 cout("")
 DllCall("Kernel32.dll", "BOOL", "SetConsoleTitle", "str", "GTA:V AutoUpdate Triggerbot")
 
-Global $triggerbotaddy
 
-Global $EntityType = 1 ; GetEnitityType()
-
-$op = OpenProcess(0x1F0FFF, 0, ProcessExists("GTA5.exe"))
-$module = _MemoryModuleGetBaseAddress(ProcessExists("GTA5.exe"), "GTA5.exe")
-
+$hProcess = OpenProcess(0x1F0FFF, 0, ProcessExists("GTA5.exe"))
+$dwModuleBase = _MemoryModuleGetBaseAddress(ProcessExists("GTA5.exe"), "GTA5.exe")
 Update()
-
-cout("Triggerbot Address: " & @CRLF & "GTA5.exe + " & $triggerbotaddy, 0x5)
+cout("Triggerbot Address: " & @CRLF & "GTA5.exe + " & $dwTriggerbotFinal, 0x5)
 cout(@CRLF & @CRLF & "Triggerbot is running now.", 0xA)
 cout(@CRLF & @CRLF & "Selected entity: ")
 cout(GetEnitityType(), 0x4)
@@ -27,8 +22,8 @@ cout(GetEnitityType(), 0x4)
 
 While 1
 	If _IsPressed("47", $hDLL) Then ;hotkey: G
-		$trigread = NtReadVirtualMemory($op, $module + $triggerbotaddy, "dword")
-		If $trigread = $EntityType Then ; entity type (0 = empty, 1 = enemies, 2 = people, 3 = dead bodies)
+		$iTriggerType = NtReadVirtualMemory($hProcess, $dwModuleBase + $dwTriggerbotFinal, "dword")
+		If $iTriggerType = $iEntityType Then ; entity type (0 = empty, 1 = enemies, 2 = people, 3 = dead bodies)
 			MouseClick("primary")
 		EndIf
 	EndIf
@@ -37,30 +32,28 @@ WEnd
 
 
 Func Update()
-	$trigpattern = FindPattern($op, "8B0D........E9........48895C24084889742410574883EC2033DB", False, $module)
-	$trigp = Execute($trigpattern - $module)
-	$trigp = "0x" & Hex($trigp, 8)
-	$Trip = NtReadVirtualMemory($op, $trigpattern + 0x2, "dword")
-	$Trip = "0x" & Hex($Trip, 8)
-	$trigPTR = "0x" & Hex(Execute($trigp + $Trip + 0x6), 8)
+	Local $dwTriggerSearch, $dwTriggerLocation, $dwTriggerAddr, $dwTriggerPtr
+	Local $dwTriggerOffsetSearch, $dwTriggerOffsetLocation, $dwTriggerOffsetAddr, $dwTriggerbotFinal
 
-	$trigoffsetpattern = FindPattern($op, "418B85........C1E8..4184C775088ACA41", False, $module)
-	$trigoffsetp = Execute($trigoffsetpattern - $module)
-	$trigoffsetp = "0x" & Hex($trigoffsetp, 8)
-	$Trigoffsetrip = NtReadVirtualMemory($op, $trigoffsetpattern + 0x3, "dword")
-	$Trigoffsetrip = "0x" & Hex($Trigoffsetrip, 8)
+	$dwTriggerSearch = FindPattern($hProcess, "8B0D........E9........48895C24084889742410574883EC2033DB", False, $dwModuleBase)
+	$dwTriggerLocation = "0x" & Hex(Execute($dwTriggerSearch - $dwModuleBase), 8)
+	$dwTriggerAddr = "0x" & Hex(NtReadVirtualMemory($hProcess, $dwTriggerSearch + 0x2, "dword"), 8)
+	$dwTriggerPtr = "0x" & Hex(Execute($dwTriggerLocation + $dwTriggerAddr + 0x6), 8)
 
-	$triggerbotaddy = "0x" & Hex(Execute($trigPTR - (($Trigoffsetrip * 0x7) + 0x1000)), 8) ; most retarded calculation in my entire life ngl
+	$dwTriggerOffsetSearch = FindPattern($hProcess, "418B85........C1E8..4184C775088ACA41", False, $dwModuleBase)
+	$dwTriggerOffsetLocation = "0x" & Hex(Execute($dwTriggerOffsetSearch - $dwModuleBase), 8)
+	$dwTriggerOffsetAddr = "0x" & Hex(NtReadVirtualMemory($hProcess, $dwTriggerOffsetSearch + 0x3, "dword"), 8)
+	$dwTriggerbotFinal = "0x" & Hex(Execute($dwTriggerPtr - (($dwTriggerOffsetAddr * 0x7) + 0x1000)), 8) ; most retarded calculation in my entire life ngl
 EndFunc   ;==>Update
 
 Func GetEnitityType()
-	If $EntityType = 0 Then
+	If $iEntityType = 0 Then
 		Return "Empty"
-	ElseIf $EntityType = 1 Then
+	ElseIf $iEntityType = 1 Then
 		Return "Enemies"
-	ElseIf $EntityType = 2 Then
+	ElseIf $iEntityType = 2 Then
 		Return "People"
-	ElseIf $EntityType = 3 Then
+	ElseIf $iEntityType = 3 Then
 		Return "Dead bodies"
 	EndIf
 EndFunc   ;==>GetEnitityType
