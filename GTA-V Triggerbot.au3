@@ -10,25 +10,14 @@ Local $hDLL = DllOpen("user32.dll")
 cout("")
 DllCall("Kernel32.dll","BOOL","SetConsoleTitle","str","GTA:V AutoUpdate Triggerbot")
 
+Global $triggerbotaddy
+
 Global $EntityType = 1 ; GetEnitityType()
 
 $op = OpenProcess(0x1F0FFF, 0, ProcessExists("GTA5.exe"))
 $module = _MemoryModuleGetBaseAddress(ProcessExists("GTA5.exe"), "GTA5.exe")
 
-$trigpattern = FindPattern($op, "8B0D........E9........48895C24084889742410574883EC2033DB", False, $module)
-$trigp = Execute($trigpattern - $module)
-$trigp = "0x" & Hex($trigp,8)
-$Trip = NtReadVirtualMemory($op, $trigpattern + 0x2, "dword")
-$Trip = "0x" & Hex($Trip,8)
-$trigPTR = "0x" & Hex(Execute($trigp + $Trip + 0x6),8)
-
-$trigoffsetpattern = FindPattern($op, "418B85........C1E8..4184C775088ACA41", False, $module)
-$trigoffsetp = Execute($trigoffsetpattern - $module)
-$trigoffsetp = "0x" & Hex($trigoffsetp,8)
-$Trigoffsetrip = NtReadVirtualMemory($op, $trigoffsetpattern + 0x3, "dword")
-$Trigoffsetrip = "0x" & Hex($Trigoffsetrip,8)
-
-$triggerbotaddy = "0x" & Hex(Execute($trigPTR - (($Trigoffsetrip * 0x7) + 0x1000)),8) ; most retarded calculation in my entire life ngl
+Update()
 
 cout("Triggerbot Address: " & @CRLF & "GTA5.exe + " & $triggerbotaddy, 0x5)
 cout(@CRLF & @CRLF & "Triggerbot is running now.", 0xA)
@@ -47,22 +36,22 @@ Sleep(10)
 WEnd
 
 
+Func Update()
+$trigpattern = FindPattern($op, "8B0D........E9........48895C24084889742410574883EC2033DB", False, $module)
+$trigp = Execute($trigpattern - $module)
+$trigp = "0x" & Hex($trigp,8)
+$Trip = NtReadVirtualMemory($op, $trigpattern + 0x2, "dword")
+$Trip = "0x" & Hex($Trip,8)
+$trigPTR = "0x" & Hex(Execute($trigp + $Trip + 0x6),8)
 
+$trigoffsetpattern = FindPattern($op, "418B85........C1E8..4184C775088ACA41", False, $module)
+$trigoffsetp = Execute($trigoffsetpattern - $module)
+$trigoffsetp = "0x" & Hex($trigoffsetp,8)
+$Trigoffsetrip = NtReadVirtualMemory($op, $trigoffsetpattern + 0x3, "dword")
+$Trigoffsetrip = "0x" & Hex($Trigoffsetrip,8)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+$triggerbotaddy = "0x" & Hex(Execute($trigPTR - (($Trigoffsetrip * 0x7) + 0x1000)),8) ; most retarded calculation in my entire life ngl
+EndFunc
 
 Func GetEnitityType()
 	If $EntityType = 0 Then
