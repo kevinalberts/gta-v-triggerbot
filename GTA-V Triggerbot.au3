@@ -25,7 +25,7 @@ cout(GetEnitityType(), 0x4)
 
 
 While 1
-	If _IsPressed("58", $hDLL) Then ;hotkey: G
+	If _IsPressed("58", $hDLL) Then ;hotkey: X
 		$iTriggerType = NtReadVirtualMemory($hProcess, $dwModuleBase + $dwTriggerbotFinal, "dword")
 		If $iTriggerType = $iEntityType Then ; entity type (0 = empty, 1 = enemies, 2 = people, 3 = dead bodies, 4 = online friends)
 			MouseClick("primary")
