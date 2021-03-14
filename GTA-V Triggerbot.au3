@@ -5,7 +5,11 @@
 #include <Misc.au3>
 #include <Console.au3>
 
-Global $hDLL = DllOpen("user32.dll"), $dwTriggerbotFinal, $hProcess, $dwModuleBase, $iEntityType = 1 ; GetEnitityType()
+Global $hDLL = DllOpen("user32.dll")
+Global $dwTriggerbotFinal, $hProcess, $dwModuleBase, $iTriggerType
+Global $iEntityType = 1 ; GetEnitityType()
+Global $dwTriggerSearch, $dwTriggerLocation, $dwTriggerAddr, $dwTriggerPtr
+Global $dwTriggerOffsetSearch, $dwTriggerOffsetLocation, $dwTriggerOffsetAddr, $dwTriggerbotFinal
 
 cout("")
 DllCall("Kernel32.dll", "BOOL", "SetConsoleTitle", "str", "GTA:V AutoUpdate Triggerbot")
@@ -21,9 +25,9 @@ cout(GetEnitityType(), 0x4)
 
 
 While 1
-	If _IsPressed("47", $hDLL) Then ;hotkey: G
+	If _IsPressed("58", $hDLL) Then ;hotkey: G
 		$iTriggerType = NtReadVirtualMemory($hProcess, $dwModuleBase + $dwTriggerbotFinal, "dword")
-		If $iTriggerType = $iEntityType Then ; entity type (0 = empty, 1 = enemies, 2 = people, 3 = dead bodies)
+		If $iTriggerType = $iEntityType Then ; entity type (0 = empty, 1 = enemies, 2 = people, 3 = dead bodies, 4 = online friends)
 			MouseClick("primary")
 		EndIf
 	EndIf
@@ -32,9 +36,6 @@ WEnd
 
 
 Func Update()
-	Local $dwTriggerSearch, $dwTriggerLocation, $dwTriggerAddr, $dwTriggerPtr
-	Local $dwTriggerOffsetSearch, $dwTriggerOffsetLocation, $dwTriggerOffsetAddr, $dwTriggerbotFinal
-
 	$dwTriggerSearch = FindPattern($hProcess, "8B0D........E9........48895C24084889742410574883EC2033DB", False, $dwModuleBase)
 	$dwTriggerLocation = "0x" & Hex(Execute($dwTriggerSearch - $dwModuleBase), 8)
 	$dwTriggerAddr = "0x" & Hex(NtReadVirtualMemory($hProcess, $dwTriggerSearch + 0x2, "dword"), 8)
@@ -55,6 +56,8 @@ Func GetEnitityType()
 		Return "People"
 	ElseIf $iEntityType = 3 Then
 		Return "Dead bodies"
+	ElseIf $iEntityType = 4 Then
+		Return "Online Friends"
 	EndIf
 EndFunc   ;==>GetEnitityType
 
