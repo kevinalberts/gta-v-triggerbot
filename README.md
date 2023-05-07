@@ -1,16 +1,16 @@
 # Gta V Triggerbot
 Simple GTA:V Triggerbot that autoupdates itself. Written in AutoIt.
 
+# Tutorial
 Install AutoIt 3.3.14.5 or more.
-
 Put Console.au3 and NtProcess.au3 into Include folder in your AutoIt installation path.
-
 Extract triggerbot.ini file to your desktop.
-
 Run or compile script as x64.
+OR
+Just extract triggerbot.ini file to your desktop. Run the exe
 
-# IsPressed function a.k.a hotkey
-You can change the hotkey inside triggerbot.ini.
+# Settings
+You can change the target type and the hotkey inside triggerbot.ini.
 
 # Last Update
 Created in March 2021, Updated in April 2023.
