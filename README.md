@@ -7,7 +7,7 @@ Put Console.au3 and NtProcess.au3 into Include folder in your AutoIt installatio
 Extract triggerbot.ini file to your desktop.  
 Run or compile script as x64.  
 OR  
-Just extract triggerbot.ini file to your desktop. Run the exe
+Just extract triggerbot.ini file to your desktop and run the exe
 
 # Settings
 You can change the target type and the hotkey inside triggerbot.ini.
