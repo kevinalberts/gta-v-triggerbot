@@ -78,7 +78,26 @@ Func GetProcAddress($szFunctionname, $szDLL)
 EndFunc   ;==>GetProcAddress
 
 ;credits to luzifer (not made by me, just edited to let it work with readprocessmemory)
-Func FindPattern($ah_Handle, $pattern, $after = False, $iv_addrStart = 0x00000000, $iv_addrEnd = 0x7FFFFFFFFFFF, $step = 51200)
+Func FindPatternX32($ah_Handle, $pattern, $after = False, $iv_addrStart = 0x00000000, $iv_addrEnd = 0x7FFFFFFFFFF, $step = 51200)
+	$pattern = StringRegExpReplace($pattern, "[^0123456789ABCDEFabcdef.]", "")
+	If StringLen($pattern) = 0 Then
+		SetError(2)
+		Return -2
+	EndIf
+	For $addr = $iv_addrStart To $iv_addrEnd Step $step - (StringLen($pattern) / 2)
+		StringRegExp(NtReadVirtualMemory($ah_Handle, $addr, "byte[" & $step & "]"), $pattern, 1, 2)
+		If Not @error Then
+			If $after Then
+				Return StringFormat("0x%.8X", $addr + ((@extended - 2) / 2))
+			Else
+				Return StringFormat("0x%.8X", $addr + ((@extended - StringLen($pattern) - 2) / 2))
+			EndIf
+		EndIf
+	Next
+	Return -3
+EndFunc   ;==>FindPattern
+
+Func FindPatternX64($ah_Handle, $pattern, $after = False, $iv_addrStart = 0x00000000, $iv_addrEnd = 0x7FFFFFFFFFFF, $step = 51200)
    $pattern = StringRegExpReplace($pattern, "[^0123456789ABCDEFabcdef.]", "")
    For $addr = $iv_addrStart To $iv_addrEnd Step $step - (StringLen($pattern) / 2)
        $read = NtReadVirtualMemory($ah_Handle, $addr, "byte[" & $step & "]")
@@ -188,4 +207,42 @@ Func MemCmp($hProcess, $Reg1, $Reg2, $iSize)
 	EndIf
 
 	Return StringCompare(NtReadVirtualMemory($hProcess, $Reg1, 'byte[' & $iSize & ']'), NtReadVirtualMemory($hProcess, $Reg2, 'byte[' & $iSize & ']'))
-EndFunc   ;==>MemCmp
+ EndFunc   ;==>MemCmp
+
+ Func  _MemoryModuleGetBaseAddress($iPID , $sModule)
+    If  Not  ProcessExists ($iPID) Then  Return  SetError (1 , 0 , 0)
+
+    If  Not  IsString ($sModule) Then  Return  SetError (2 , 0 , 0)
+
+    Local    $PSAPI=DllOpen ("psapi.dll")
+
+    ;Get Process Handle
+    Local    $hProcess
+    Local    $PERMISSION=BitOR (0x0002, 0x0400, 0x0008, 0x0010, 0x0020) ; CREATE_THREAD, QUERY_INFORMATION, VM_OPERATION, VM_READ, VM_WRITE
+
+    If  $iPID>0 Then
+        Local  $hProcess=DllCall ("kernel32.dll" , "ptr" , "OpenProcess" , "dword" , $PERMISSION , "int" , 0 , "dword" , $iPID)
+        If  $hProcess [ 0 ] Then
+            $hProcess=$hProcess [ 0 ]
+        EndIf
+    EndIf
+
+    ;EnumProcessModules
+    Local    $Modules=DllStructCreate ("ptr[1024]")
+    Local    $aCall=DllCall ($PSAPI , "int" , "EnumProcessModules" , "ptr" , $hProcess , "ptr" , DllStructGetPtr ($Modules), "dword" , DllStructGetSize ($Modules), "dword*" , 0)
+    If  $aCall [ 4 ]>0 Then
+        Local    $iModnum=$aCall [ 4 ] / 4
+        Local    $aTemp
+        For  $i=1 To  $iModnum
+            $aTemp= DllCall ($PSAPI , "dword" , "GetModuleBaseNameW" , "ptr" , $hProcess , "ptr" , Ptr(DllStructGetData ($Modules , 1 , $i)) , "wstr" , "" , "dword" , 260)
+            If  $aTemp [ 3 ]=$sModule Then
+                DllClose ($PSAPI)
+                Return  Ptr(DllStructGetData ($Modules , 1 , $i))
+            EndIf
+        Next
+    EndIf
+
+    DllClose ($PSAPI)
+    Return  SetError (-1 , 0 , 0)
+
+EndFunc
