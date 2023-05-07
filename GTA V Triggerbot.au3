@@ -6,11 +6,10 @@
 #include <Console.au3>
 
 Global $hDLL = DllOpen("user32.dll")
-Global $dwTriggerbotFinal, $hProcess, $dwModuleBase, $iTriggerType
 Global $iEntityType = IniRead(@DesktopDir & "\triggerbot.ini", "Triggerbot", "EntityType", Default)
 Global $hKey = IniRead(@DesktopDir & "\triggerbot.ini", "Triggerbot", "Key", Default)
 ; GetEntityType() ; entity type (0 = empty, 1 = enemies, 2 = people, 3 = dead bodies, 4 = online friends, 5 = everything)
-Global $TriggerbotSearch, $dwTriggerAddr, $TriggerBotBase, $Offset1Search, $dwOffset1, $TriggerBotAddress
+Global $TriggerbotSearch, $dwTriggerAddr, $TriggerBotBase, $Offset1Search, $dwOffset1, $TriggerBotAddress, $iTriggerType
 
 cout("")
 DllCall("Kernel32.dll", "BOOL", "SetConsoleTitle", "str", "GTA:V AutoUpdate Triggerbot")
