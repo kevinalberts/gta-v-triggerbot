@@ -16,11 +16,11 @@ You can change the hotkey inside triggerbot.ini.
 Created in March 2021, Updated in April 2023.
 
 # FAQs
-Will it work on [any platform]?
+Will it work on [any platform]?  
 Yes, It will work on both Steam, Epic Games and Social Club version of the game.
 
-Will i get banned using this?
+Will i get banned using this?  
 No.
 
-Can i contact you via discord?
+Can i contact you via discord?  
 Yes. Girexo#1974
